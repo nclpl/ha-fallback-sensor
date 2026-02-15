@@ -65,21 +65,6 @@ The sensor exposes these attributes:
 - `active_entity`: The entity_id currently providing the state
 - `active_priority`: The priority position of the active entity (1 = primary, 2 = first backup, etc.)
 
-## Development Status
-
-This is currently in **Phase 1** (local iteration). The integration is being tested as a custom component before being submitted to Home Assistant core.
-
-## Roadmap
-
-- [x] Phase 1: Custom integration (iterate locally)
-- [ ] Phase 2: Prepare for core contribution
-- [ ] Phase 3: Get community buy-in
-- [ ] Phase 4: Submit PR to Home Assistant core
-
-## Contributing
-
-This integration is intended for submission to Home Assistant core. Feedback and testing are welcome!
-
 ## License
 
 MIT License - See LICENSE file for details
