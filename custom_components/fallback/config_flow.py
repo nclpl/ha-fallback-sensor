@@ -14,7 +14,7 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaFlowFormStep,
 )
 
-from .const import CONF_ENTITY_IDS, DOMAIN
+from .const import CONF_ENTITY_IDS, CONF_TIMEOUT, DEFAULT_TIMEOUT, DOMAIN
 
 
 class FallbackConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -48,6 +48,14 @@ class FallbackConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Required(CONF_ENTITY_IDS): selector.EntitySelector(
                     selector.EntitySelectorConfig(multiple=True)
+                ),
+                vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=1440,
+                        unit_of_measurement="minutes",
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
                 ),
             }
         )
@@ -96,6 +104,17 @@ class FallbackOptionsFlowHandler(OptionsFlow):
                     default=self.config_entry.options.get(CONF_ENTITY_IDS, []),
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(multiple=True)
+                ),
+                vol.Optional(
+                    CONF_TIMEOUT,
+                    default=self.config_entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=1440,
+                        unit_of_measurement="minutes",
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
                 ),
             }
         )

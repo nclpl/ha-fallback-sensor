@@ -1,6 +1,7 @@
 """Sensor platform for Fallback integration."""
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
@@ -13,9 +14,10 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event, async_track_time_interval
+from homeassistant.util import dt as dt_util
 
-from .const import CONF_ENTITY_IDS
+from .const import CONF_ENTITY_IDS, CONF_TIMEOUT, DEFAULT_TIMEOUT
 
 IGNORE_STATES = {STATE_UNAVAILABLE, STATE_UNKNOWN}
 
@@ -29,8 +31,9 @@ async def async_setup_entry(
     entity_ids = entry.options[CONF_ENTITY_IDS]
     name = entry.title
     unique_id = entry.entry_id
+    timeout = entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
 
-    async_add_entities([FallbackSensor(name, entity_ids, unique_id)], True)
+    async_add_entities([FallbackSensor(name, entity_ids, unique_id, timeout)], True)
 
 
 class FallbackSensor(SensorEntity):
@@ -38,16 +41,21 @@ class FallbackSensor(SensorEntity):
 
     _attr_should_poll = False
 
-    def __init__(self, name: str, entity_ids: list[str], unique_id: str) -> None:
+    def __init__(self, name: str, entity_ids: list[str], unique_id: str, timeout: int) -> None:
         """Initialize the Fallback sensor."""
         self._entity_ids = entity_ids
         self._attr_name = name
         self._attr_unique_id = unique_id
+        self._timeout = timeout  # Timeout in minutes
         self._active_entity_id: str | None = None
+        self._active_entity_priority: int | None = None
         self._attr_native_value: Any = None
         self._attr_native_unit_of_measurement: str | None = None
         self._attr_device_class: str | None = None
         self._attr_state_class: str | None = None
+        # Track last state and change time for each entity
+        self._entity_states: dict[str, Any] = {}
+        self._entity_last_changed: dict[str, datetime] = {}
 
     async def async_added_to_hass(self) -> None:
         """Register state change listener when added to hass."""
@@ -57,6 +65,17 @@ class FallbackSensor(SensorEntity):
                 self.hass, self._entity_ids, self._async_state_changed
             )
         )
+
+        # If timeout is enabled, set up periodic check
+        if self._timeout > 0:
+            self.async_on_remove(
+                async_track_time_interval(
+                    self.hass,
+                    self._async_check_timeout,
+                    timedelta(minutes=1),  # Check every minute
+                )
+            )
+
         # Calculate initial state
         self._update_state()
 
@@ -67,15 +86,45 @@ class FallbackSensor(SensorEntity):
         self.async_write_ha_state()
 
     @callback
+    def _async_check_timeout(self, now: datetime) -> None:
+        """Periodically check if current entity has timed out."""
+        self._update_state()
+        self.async_write_ha_state()
+
+    @callback
     def _update_state(self) -> None:
         """Walk the priority list and pick the first available entity."""
-        for entity_id in self._entity_ids:
+        now = dt_util.utcnow()
+
+        for index, entity_id in enumerate(self._entity_ids):
             state = self.hass.states.get(entity_id)
             if state is None:
                 continue
             if state.state not in IGNORE_STATES:
+                # Track state changes for timeout detection
+                prev_state = self._entity_states.get(entity_id)
+                if prev_state != state.state:
+                    # State changed, update tracking
+                    self._entity_states[entity_id] = state.state
+                    self._entity_last_changed[entity_id] = now
+                elif entity_id not in self._entity_last_changed:
+                    # First time seeing this entity
+                    self._entity_states[entity_id] = state.state
+                    self._entity_last_changed[entity_id] = now
+
+                # Check if entity has timed out (if timeout is enabled)
+                if self._timeout > 0:
+                    last_changed = self._entity_last_changed.get(entity_id, now)
+                    time_since_change = now - last_changed
+                    timeout_duration = timedelta(minutes=self._timeout)
+
+                    if time_since_change >= timeout_duration:
+                        # Entity has timed out, skip to next one
+                        continue
+
                 # Found a valid entity, use its state
                 self._active_entity_id = entity_id
+                self._active_entity_priority = index + 1  # 1-based priority
 
                 # Try to convert to numeric if possible, otherwise keep as string
                 try:
@@ -92,9 +141,10 @@ class FallbackSensor(SensorEntity):
 
                 return
 
-        # All entities are unavailable/unknown
+        # All entities are unavailable/unknown/timed out
         self._attr_native_value = None
         self._active_entity_id = None
+        self._active_entity_priority = None
         self._attr_native_unit_of_measurement = None
         self._attr_device_class = None
         self._attr_state_class = None
@@ -105,6 +155,7 @@ class FallbackSensor(SensorEntity):
         return {
             "entity_ids": self._entity_ids,
             "active_entity": self._active_entity_id,
+            "active_priority": self._active_entity_priority,
         }
 
     @property

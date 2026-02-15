@@ -19,6 +19,7 @@ The fallback sensor will show the Z-Wave reading normally, but if that device go
 
 ✅ **Priority-based fallback** - Entity order matters, first has highest priority
 ✅ **Automatic recovery** - Switches back to higher-priority sensors when available
+✅ **Timeout detection** - Optional detection of "stuck" sensors that stop updating
 ✅ **Attribute inheritance** - Inherits device_class, unit_of_measurement, and state_class
 ✅ **Universal compatibility** - Works with any sensor type (numeric, string, etc.)
 ✅ **Transparent operation** - Shows which entity is currently active via attributes
@@ -29,9 +30,11 @@ The fallback sensor will show the Z-Wave reading normally, but if that device go
 2. Click **Create Helper** → **Fallback**
 3. Give your sensor a name
 4. Select entities in priority order (drag to reorder)
-5. Done! The sensor will automatically manage failover
+5. (Optional) Set timeout to detect stuck sensors (0 = disabled)
+6. Done! The sensor will automatically manage failover
 
 ## Exposed Attributes
 
 - `entity_ids` - The full ordered list of source entities
 - `active_entity` - The entity_id currently providing the state
+- `active_priority` - The priority position of the active entity (1 = primary, 2 = first backup, etc.)

@@ -7,7 +7,11 @@
         "description": "A sensor that uses the state of the first available entity from an ordered list.",
         "data": {
           "name": "Name",
-          "entity_ids": "Entities (in priority order)"
+          "entity_ids": "Entities (in priority order)",
+          "timeout": "State change timeout (0 = disabled)"
+        },
+        "data_description": {
+          "timeout": "Fall back to next entity if the current entity's state hasn't changed for this many minutes. Set to 0 to disable timeout detection."
         }
       }
     },
@@ -22,7 +26,11 @@
         "title": "Update Fallback Sensor",
         "description": "Modify the entity list (order determines priority).",
         "data": {
-          "entity_ids": "Entities (in priority order)"
+          "entity_ids": "Entities (in priority order)",
+          "timeout": "State change timeout (0 = disabled)"
+        },
+        "data_description": {
+          "timeout": "Fall back to next entity if the current entity's state hasn't changed for this many minutes. Set to 0 to disable timeout detection."
         }
       }
     },
