@@ -1,0 +1,9 @@
+{
+  "entity": {
+    "sensor": {
+      "fallback": {
+        "default": "mdi:format-list-numbered"
+      }
+    }
+  }
+}

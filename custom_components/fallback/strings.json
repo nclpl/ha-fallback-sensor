@@ -1,0 +1,34 @@
+{
+  "title": "Fallback",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Create Fallback Sensor",
+        "description": "A sensor that uses the state of the first available entity from an ordered list.",
+        "data": {
+          "name": "Name",
+          "entity_ids": "Entities (in priority order)"
+        }
+      }
+    },
+    "error": {
+      "no_entities": "Please select at least one entity",
+      "circular_reference": "The fallback sensor cannot include itself in the entity list"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update Fallback Sensor",
+        "description": "Modify the entity list (order determines priority).",
+        "data": {
+          "entity_ids": "Entities (in priority order)"
+        }
+      }
+    },
+    "error": {
+      "no_entities": "Please select at least one entity",
+      "circular_reference": "The fallback sensor cannot include itself in the entity list"
+    }
+  }
+}
