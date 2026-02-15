@@ -5,14 +5,10 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
-from homeassistant.helpers import selector
-from homeassistant.helpers.schema_config_entry_flow import (
-    SchemaConfigFlowHandler,
-    SchemaFlowFormStep,
-)
+from homeassistant.helpers import entity_registry as er, selector
 
 from .const import CONF_ENTITY_IDS, CONF_TIMEOUT, DEFAULT_TIMEOUT, DOMAIN
 
@@ -93,6 +89,21 @@ class FallbackOptionsFlowHandler(OptionsFlow):
             if not user_input.get(CONF_ENTITY_IDS):
                 errors["base"] = "no_entities"
             else:
+                # Check for circular reference
+                registry = er.async_get(self.hass)
+                own_entity_ids = [
+                    entry.entity_id
+                    for entry in er.async_entries_for_config_entry(
+                        registry, self.config_entry.entry_id
+                    )
+                ]
+                if any(
+                    eid in own_entity_ids
+                    for eid in user_input[CONF_ENTITY_IDS]
+                ):
+                    errors["base"] = "circular_reference"
+
+            if not errors:
                 # Update the config entry options
                 return self.async_create_entry(title="", data=user_input)
 
