@@ -9,7 +9,7 @@ The Fallback Sensor walks through an ordered list of source entities and returns
 **Example use case:** You have three temperature sensors for a room:
 1. Z-Wave sensor (primary)
 2. Zigbee sensor (backup)
-3. Cloud-based weather API (last resort)
+3. Cloud-based Thermostat integration (last resort)
 
 The fallback sensor will show the Z-Wave reading normally, but if that device goes offline, it automatically switches to the Zigbee sensor, and so on.
 
