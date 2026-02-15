@@ -1,9 +1,6 @@
 {
   "name": "Fallback Sensor",
   "content_in_root": false,
-  "filename": "fallback",
   "homeassistant": "2024.1.0",
-  "render_readme": true,
-  "zip_release": true,
-  "hide_default_branch": true
+  "render_readme": true
 }
