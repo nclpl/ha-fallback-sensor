@@ -24,17 +24,19 @@ The fallback sensor will show the Z-Wave reading normally, but if that device go
 
 ## Installation
 
-### Manual Installation
+### HACS (recommended)
 
-1. Copy the `custom_components/fallback` directory to your Home Assistant `custom_components` directory
-2. Restart Home Assistant
-3. Go to Settings → Devices & Services → Helpers
-4. Click "Create Helper" → "Fallback"
-5. Configure your sensor
+1. Install [HACS](https://hacs.xyz/) if you haven't already.
+2. In Home Assistant, go to **HACS > Integrations**.
+3. Open the three-dot menu in the top right and select **Custom repositories**.
+4. Enter `https://github.com/nclpl/ha-fallback-sensor` and select **Integration** as the category.
+5. Click **Add**, then find **Fallback Sensor** in the list and click **Download**.
+6. Restart Home Assistant.
 
-### HACS Installation (coming soon)
+### Manual
 
-This integration will be available through HACS once it's published to the default repository.
+1. Copy the `custom_components/fallback` directory to your Home Assistant `custom_components` directory.
+2. Restart Home Assistant.
 
 ## Configuration
 
