@@ -134,7 +134,7 @@ class FallbackSensor(SensorEntity):
             # Found a valid entity, use its state
             self._active_entity_id = entity_id
             self._active_entity_priority = index + 1  # 1-based priority
-            self._fallback_reason = last_skip_reason if index > 0 else None
+            self._fallback_reason = last_skip_reason if index > 0 else "none"
 
             if previous_active != entity_id:
                 if previous_active is None:
